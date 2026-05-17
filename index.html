@@ -1,3 +1,258 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Order Tracker</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+    margin:0;
+    padding:0;
+    font-family:Arial;
+    background:#f3f4f6;
+}
+
+.header{
+    background:#111827;
+    color:white;
+    text-align:center;
+    padding:25px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+    padding:20px;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    margin-top:20px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+input, select{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:15px;
+}
+
+.blue{
+    background:#2563eb;
+    color:white;
+}
+
+.green{
+    background:#16a34a;
+    color:white;
+}
+
+.orange{
+    background:#ea580c;
+    color:white;
+}
+
+.gray{
+    background:#6b7280;
+    color:white;
+}
+
+.hidden{
+    display:none;
+}
+
+.stats{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.statbox{
+    flex:1;
+    min-width:120px;
+    background:#dbeafe;
+    padding:15px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.order{
+    background:#eef2ff;
+    padding:15px;
+    margin-top:10px;
+    border-radius:10px;
+}
+
+.delay{
+    background:#fee2e2;
+    border-left:5px solid red;
+}
+
+.log{
+    background:#f9fafb;
+    padding:10px;
+    margin-top:10px;
+    border-radius:8px;
+}
+
+.small{
+    color:#666;
+    font-size:13px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<h1>ORDER TRACKER</h1>
+
+<p>Manager & Operator System</p>
+
+</div>
+
+<div class="container">
+
+<div class="card" id="loginCard">
+
+<h2>Login</h2>
+
+<input id="username" placeholder="Username">
+
+<input id="password" type="password" placeholder="Password">
+
+<button class="blue" onclick="login()">
+
+Login
+
+</button>
+
+</div>
+
+<div class="card hidden" id="dashboardCard">
+
+<h2>Manager Dashboard</h2>
+
+<div class="stats">
+
+<div class="statbox">
+<h3 id="totalOrders">0</h3>
+<p>Total Orders</p>
+</div>
+
+<div class="statbox">
+<h3 id="pendingOrders">0</h3>
+<p>Pending</p>
+</div>
+
+<div class="statbox">
+<h3 id="deliveredOrders">0</h3>
+<p>Delivered</p>
+</div>
+
+<div class="statbox">
+<h3 id="delayedOrders">0</h3>
+<p>Delayed</p>
+</div>
+
+</div>
+
+</div>
+
+<div class="card hidden" id="operatorPanel">
+
+<h2>Order Update</h2>
+
+<input id="orderId" placeholder="Order ID">
+
+<input id="location" placeholder="Location">
+
+<select id="status">
+
+<option>Order Received</option>
+<option>In Transit</option>
+<option>Delivered</option>
+
+</select>
+
+<button class="green" onclick="addOrder()">
+
+Add Order
+
+</button>
+
+<button class="orange" onclick="updateOrder()">
+
+Update Order
+
+</button>
+
+</div>
+
+<div class="card hidden" id="managerPanel">
+
+<h2>Manager Controls</h2>
+
+<input id="search" placeholder="Search Order" onkeyup="loadOrders()">
+
+<select id="filter" onchange="loadOrders()">
+
+<option value="all">All Orders</option>
+
+<option value="pending">Pending</option>
+
+<option value="delivered">Delivered</option>
+
+</select>
+
+<button class="gray" onclick="downloadReport()">
+
+Download Excel Report
+
+</button>
+
+</div>
+
+<div class="card hidden" id="ordersCard">
+
+<h2>Orders</h2>
+
+<div id="orders"></div>
+
+</div>
+
+<div class="card hidden" id="logsCard">
+
+<h2>Operator Activity</h2>
+
+<div id="logs"></div>
+
+</div>
+
+</div>
+
 <script>
 
 let currentUser = "";
@@ -16,6 +271,7 @@ headers:{
 body:JSON.stringify({
 
 username:document.getElementById("username").value,
+
 password:document.getElementById("password").value
 
 })
@@ -158,12 +414,72 @@ fetch("/get_orders")
 
 let html = "";
 
+let total = data.length;
+let pending = 0;
+let delivered = 0;
+let delayed = 0;
+
+let searchValue = "";
+
+let filterValue = "all";
+
+if(currentRole === "manager"){
+
+searchValue =
+document.getElementById("search")
+.value.toLowerCase();
+
+filterValue =
+document.getElementById("filter")
+.value;
+
+}
+
 for(let i = 0; i < data.length; i++){
 
 let o = data[i];
 
+if(searchValue &&
+!o.order_id.toLowerCase().includes(searchValue)){
+
+continue;
+
+}
+
+if(filterValue === "pending" &&
+o.status === "Delivered"){
+
+continue;
+
+}
+
+if(filterValue === "delivered" &&
+o.status !== "Delivered"){
+
+continue;
+
+}
+
+if(o.status === "Delivered"){
+delivered++;
+}
+else{
+pending++;
+}
+
+if(o.delayed){
+delayed++;
+}
+
+let cls = "order";
+
+if(o.delayed){
+cls += " delay";
+}
+
 html +=
-"<div class='order'>" +
+
+"<div class='" + cls + "'>" +
 
 "<b>" + o.order_id + "</b><br>" +
 
@@ -171,15 +487,39 @@ o.status + "<br>" +
 
 o.location + "<br>" +
 
-"Updated By: " + o.updated_by + "<br>" +
+"<span class='small'>" +
+
+"Updated By: " + o.updated_by +
+
+"</span><br>" +
+
+"<span class='small'>" +
 
 "Last Updated: " + o.last_updated +
+
+"</span>" +
 
 "</div>";
 
 }
 
 document.getElementById("orders").innerHTML = html;
+
+if(currentRole === "manager"){
+
+document.getElementById("totalOrders")
+.innerText = total;
+
+document.getElementById("pendingOrders")
+.innerText = pending;
+
+document.getElementById("deliveredOrders")
+.innerText = delivered;
+
+document.getElementById("delayedOrders")
+.innerText = delayed;
+
+}
 
 });
 
@@ -199,18 +539,21 @@ fetch("/get_logs")
 
 let html = "";
 
+data.reverse();
+
 for(let i = 0; i < data.length; i++){
 
 let log = data[i];
 
 html +=
+
 "<div class='log'>" +
 
 "<b>" + log.operator_name + "</b><br>" +
 
 log.action + "<br>" +
 
-log.order_id + "<br>" +
+"Order: " + log.order_id + "<br>" +
 
 log.time +
 
@@ -226,4 +569,10 @@ document.getElementById("logs").innerHTML = html;
 
 setInterval(loadOrders, 180000);
 
+setInterval(loadLogs, 180000);
+
 </script>
+
+</body>
+
+</html>
