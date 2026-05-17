@@ -1,55 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tracker App</title>
+    <title>Order Tracker</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI';
+            background: #f4f6f8;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            width: 380px;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        input, select {
+            width: 90%;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 92%;
+            padding: 8px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .primary { background: #3498db; color: white; }
+        .secondary { background: #7f8c8d; color: white; }
+        .success { background: #2ecc71; color: white; }
+
+        .order {
+            background: #ecf0f1;
+            margin: 5px;
+            padding: 8px;
+            border-radius: 5px;
+            text-align: left;
+        }
+
+        .delay {
+            background: #ffe6e6;
+            color: #c0392b;
+            font-weight: bold;
+        }
+
+        .dashboard {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Login</h2>
-<input id="user" placeholder="Username">
-<input id="pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
+<div class="container">
+    <h3>Login</h3>
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+    <button class="primary" onclick="login()">Login</button>
+</div>
 
-<hr>
+<div class="container">
+    <h3>Order Panel</h3>
 
-<h2>Order Panel</h2>
+    <input id="oid" placeholder="Order ID">
+    <input id="loc" placeholder="Location">
 
-<input id="oid" placeholder="Order ID"><br>
-<input id="loc" placeholder="Location"><br>
+    <select id="status">
+        <option>Packing</option>
+        <option>Sent</option>
+        <option>In Transit</option>
+        <option>Delivered</option>
+        <option>Cancelled</option>
+    </select>
 
-<select id="status">
-<option>Order Received</option>
-<option>In Process</option>
-<option>Shipped</option>
-<option>In Transit</option>
-<option>Out for Delivery</option>
-<option>Delivered</option>
-</select><br><br>
+    <button class="primary" onclick="addOrder()">Add</button>
+    <button class="secondary" onclick="updateOrder()">Update</button>
+</div>
 
-<button onclick="addOrder()">Add</button>
-<button onclick="updateOrder()">Update</button>
-<button onclick="loadOrders()">Refresh</button>
+<div class="container">
+    <h3>Manager Dashboard</h3>
 
-<h3>Orders</h3>
-<div id="orders"></div>
+    <div class="dashboard" id="stats"></div>
+
+    <input id="search" placeholder="Search Order ID" onkeyup="loadOrders()">
+
+    <select id="filter" onchange="loadOrders()">
+        <option value="all">All</option>
+        <option value="pending">Pending</option>
+        <option value="delivered">Delivered</option>
+        <option value="delayed">Delayed</option>
+    </select>
+
+    <div id="orders"></div>
+</div>
 
 <script>
 let currentUser = "";
 
 function login(){
+    let u = user.value.trim();
+    let p = pass.value.trim();
+
     fetch("/login",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-            username:document.getElementById("user").value,
-            password:document.getElementById("pass").value
-        })
+        body:JSON.stringify({username:u,password:p})
     })
     .then(res=>res.json())
     .then(data=>{
         if(data.success){
-            currentUser = document.getElementById("user").value;
+            currentUser = u;
             alert("Login success");
+            loadOrders();
         } else {
             alert("Wrong login");
         }
@@ -66,7 +139,7 @@ function addOrder(){
             location:loc.value,
             user:currentUser
         })
-    }).then(()=>alert("Added"))
+    }).then(()=>loadOrders())
 }
 
 function updateOrder(){
@@ -79,23 +152,58 @@ function updateOrder(){
             location:loc.value,
             user:currentUser
         })
-    }).then(()=>alert("Updated"))
+    }).then(()=>loadOrders())
 }
 
 function loadOrders(){
     fetch("/get_orders")
     .then(res=>res.json())
     .then(data=>{
+
+        let searchVal = document.getElementById("search").value.toLowerCase();
+        let filter = document.getElementById("filter").value;
+
         let html = "";
+
+        let total = data.length;
+        let delivered = 0;
+        let pending = 0;
+        let delayed = 0;
+
         data.forEach(o=>{
-            let color = o.delay ? "red" : "green";
-            html += `<p style="color:${color}">
-            ${o.order_id} | ${o.status} | ${o.location} | ${o.updated_by}
-            </p>`;
-        })
+
+            if(o.status === "Delivered") delivered++;
+            else pending++;
+
+            if(o.delay) delayed++;
+
+            // FILTER
+            if(filter === "delivered" && o.status !== "Delivered") return;
+            if(filter === "pending" && o.status === "Delivered") return;
+            if(filter === "delayed" && !o.delay) return;
+
+            // SEARCH
+            if(!o.order_id.toLowerCase().includes(searchVal)) return;
+
+            let cls = o.delay ? "order delay" : "order";
+
+            html += `<div class="${cls}">
+                <b>${o.order_id}</b><br>
+                ${o.status} | ${o.location}<br>
+                Updated: ${o.updated_by}
+            </div>`;
+        });
+
         document.getElementById("orders").innerHTML = html;
-    })
+
+        // DASHBOARD
+        document.getElementById("stats").innerHTML =
+            `Total: ${total} | Delivered: ${delivered} | Pending: ${pending} | Delayed: ${delayed}`;
+    });
 }
+
+// 🔥 AUTO REFRESH EVERY 5 SECONDS
+setInterval(loadOrders, 5000);
 </script>
 
 </body>
