@@ -1,127 +1,142 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Order Tracker</title>
+<title>Tracker</title>
 
-    <style>
-        body {
-            font-family: 'Segoe UI';
-            background: #f4f6f8;
-            text-align: center;
-        }
+<style>
+body {
+    font-family: 'Segoe UI';
+    background: linear-gradient(135deg,#74ebd5,#9face6);
+    margin:0;
+}
 
-        .container {
-            background: white;
-            width: 380px;
-            margin: 20px auto;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
+.container {
+    background:white;
+    width:350px;
+    margin:20px auto;
+    padding:15px;
+    border-radius:12px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
 
-        input, select {
-            width: 90%;
-            padding: 8px;
-            margin: 5px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
+h3 { margin:10px 0; }
 
-        button {
-            width: 92%;
-            padding: 8px;
-            margin: 5px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+input, select {
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
+}
 
-        .primary { background: #3498db; color: white; }
-        .secondary { background: #7f8c8d; color: white; }
-        .success { background: #2ecc71; color: white; }
+button {
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:bold;
+}
 
-        .order {
-            background: #ecf0f1;
-            margin: 5px;
-            padding: 8px;
-            border-radius: 5px;
-            text-align: left;
-        }
+.primary { background:#3498db; color:white; }
+.secondary { background:#7f8c8d; color:white; }
+.success { background:#2ecc71; color:white; }
 
-        .delay {
-            background: #ffe6e6;
-            color: #c0392b;
-            font-weight: bold;
-        }
+.order {
+    background:#f1f2f6;
+    margin:6px 0;
+    padding:10px;
+    border-radius:8px;
+}
 
-        .dashboard {
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-    </style>
+.delay {
+    background:#ffdddd;
+    color:#c0392b;
+    font-weight:bold;
+}
+
+.hidden { display:none; }
+
+.dashboard {
+    font-size:13px;
+    margin-bottom:10px;
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
-    <h3>Login</h3>
-    <input id="user" placeholder="Username">
-    <input id="pass" type="password" placeholder="Password">
-    <button class="primary" onclick="login()">Login</button>
+<div class="container" id="loginBox">
+<h3>Login</h3>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button class="primary" onclick="login()">Login</button>
 </div>
 
-<div class="container">
-    <h3>Order Panel</h3>
+<div class="container hidden" id="appBox">
 
-    <input id="oid" placeholder="Order ID">
-    <input id="loc" placeholder="Location">
+<h3>Order Panel</h3>
 
-    <select id="status">
-        <option>Packing</option>
-        <option>Sent</option>
-        <option>In Transit</option>
-        <option>Delivered</option>
-        <option>Cancelled</option>
-    </select>
+<input id="oid" placeholder="Order ID">
+<input id="loc" placeholder="Location">
 
-    <button class="primary" onclick="addOrder()">Add</button>
-    <button class="secondary" onclick="updateOrder()">Update</button>
-</div>
+<select id="status">
+<option>Packing</option>
+<option>Sent</option>
+<option>In Transit</option>
+<option>Delivered</option>
+<option>Cancelled</option>
+</select>
 
-<div class="container">
-    <h3>Manager Dashboard</h3>
+<button id="addBtn" class="primary" onclick="addOrder()">Add</button>
+<button class="secondary" onclick="updateOrder()">Update</button>
 
-    <div class="dashboard" id="stats"></div>
+<hr>
 
-    <input id="search" placeholder="Search Order ID" onkeyup="loadOrders()">
+<div class="dashboard" id="stats"></div>
 
-    <select id="filter" onchange="loadOrders()">
-        <option value="all">All</option>
-        <option value="pending">Pending</option>
-        <option value="delivered">Delivered</option>
-        <option value="delayed">Delayed</option>
-    </select>
+<input id="search" placeholder="Search" onkeyup="loadOrders()">
 
-    <div id="orders"></div>
+<select id="filter" onchange="loadOrders()">
+<option value="all">All</option>
+<option value="pending">Pending</option>
+<option value="delivered">Delivered</option>
+<option value="delayed">Delayed</option>
+</select>
+
+<button class="success" onclick="downloadExcel()">Download Excel</button>
+
+<div id="orders"></div>
+
 </div>
 
 <script>
-let currentUser = "";
+let currentUser="";
+let role="";
 
 function login(){
-    let u = user.value.trim();
-    let p = pass.value.trim();
-
     fetch("/login",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({username:u,password:p})
+        body:JSON.stringify({
+            username:user.value,
+            password:pass.value
+        })
     })
     .then(res=>res.json())
     .then(data=>{
         if(data.success){
-            currentUser = u;
-            alert("Login success");
+            currentUser=user.value;
+            role=data.role;
+
+            loginBox.classList.add("hidden");
+            appBox.classList.remove("hidden");
+
+            if(role!=="manager"){
+                addBtn.style.display="none";
+            }
+
             loadOrders();
         } else {
             alert("Wrong login");
@@ -137,9 +152,15 @@ function addOrder(){
             order_id:oid.value,
             status:status.value,
             location:loc.value,
-            user:currentUser
+            user:currentUser,
+            role:role
         })
-    }).then(()=>loadOrders())
+    }).then(res=>{
+        if(res.status===403){
+            alert("Not allowed");
+        }
+        loadOrders();
+    })
 }
 
 function updateOrder(){
@@ -160,50 +181,51 @@ function loadOrders(){
     .then(res=>res.json())
     .then(data=>{
 
-        let searchVal = document.getElementById("search").value.toLowerCase();
-        let filter = document.getElementById("filter").value;
-
-        let html = "";
-
-        let total = data.length;
-        let delivered = 0;
-        let pending = 0;
-        let delayed = 0;
+        let html="";
+        let total=0,del=0,pend=0,delay=0;
 
         data.forEach(o=>{
+            total++;
+            if(o.status==="Delivered") del++; else pend++;
+            if(o.delay) delay++;
 
-            if(o.status === "Delivered") delivered++;
-            else pending++;
+            if(filter.value==="delivered" && o.status!=="Delivered") return;
+            if(filter.value==="pending" && o.status==="Delivered") return;
+            if(filter.value==="delayed" && !o.delay) return;
+            if(!o.order_id.toLowerCase().includes(search.value.toLowerCase())) return;
 
-            if(o.delay) delayed++;
+            let cls=o.delay?"order delay":"order";
 
-            // FILTER
-            if(filter === "delivered" && o.status !== "Delivered") return;
-            if(filter === "pending" && o.status === "Delivered") return;
-            if(filter === "delayed" && !o.delay) return;
-
-            // SEARCH
-            if(!o.order_id.toLowerCase().includes(searchVal)) return;
-
-            let cls = o.delay ? "order delay" : "order";
-
-            html += `<div class="${cls}">
-                <b>${o.order_id}</b><br>
-                ${o.status} | ${o.location}<br>
-                Updated: ${o.updated_by}
+            html+=`<div class="${cls}">
+            <b>${o.order_id}</b><br>
+            ${o.status} | ${o.location}<br>
+            ${o.updated_by}
             </div>`;
         });
 
-        document.getElementById("orders").innerHTML = html;
-
-        // DASHBOARD
-        document.getElementById("stats").innerHTML =
-            `Total: ${total} | Delivered: ${delivered} | Pending: ${pending} | Delayed: ${delayed}`;
-    });
+        orders.innerHTML=html;
+        stats.innerHTML=`Total:${total} | Delivered:${del} | Pending:${pend} | Delayed:${delay}`;
+    })
 }
 
-// 🔥 AUTO REFRESH EVERY 5 SECONDS
-setInterval(loadOrders, 5000);
+setInterval(loadOrders,5000);
+
+function downloadExcel(){
+    fetch("/get_orders")
+    .then(res=>res.json())
+    .then(data=>{
+        let csv="Order,Status,Location,User\n";
+        data.forEach(o=>{
+            csv+=`${o.order_id},${o.status},${o.location},${o.updated_by}\n`;
+        });
+
+        let blob=new Blob([csv]);
+        let a=document.createElement("a");
+        a.href=URL.createObjectURL(blob);
+        a.download="orders.csv";
+        a.click();
+    })
+}
 </script>
 
 </body>
