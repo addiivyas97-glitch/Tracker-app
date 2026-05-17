@@ -1,45 +1,134 @@
-from flask import Flask, request, jsonify, send_file
-import json
-import os
-import time
+from flask import Flask, request, jsonify, send_from_directory
+import sqlite3
+from datetime import datetime
 
 app = Flask(__name__)
 
-DATA_FILE = "data.json"
+# ---------- DATABASE ----------
+def init_db():
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
 
-# Load data
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {}
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+        username TEXT PRIMARY KEY,
+        password TEXT,
+        role TEXT
+    )''')
 
-# Save data
-def save_data(data):
-    with open(DATA_FILE, "w") as f:
-        json.dump(data, f)
+    c.execute('''CREATE TABLE IF NOT EXISTS orders (
+        order_id TEXT PRIMARY KEY,
+        status TEXT,
+        location TEXT,
+        updated_by TEXT,
+        last_updated TEXT
+    )''')
 
+    # Default users
+    users = [
+        ("manager", "9999", "manager"),
+        ("operator1", "1111", "worker"),
+        ("operator2", "2222", "worker"),
+        ("operator3", "3333", "worker")
+    ]
+
+    for u in users:
+        try:
+            c.execute("INSERT INTO users VALUES (?, ?, ?)", u)
+        except:
+            pass
+
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# ---------- ROUTES ----------
 @app.route("/")
 def home():
-    return send_file("index.html")
+    return send_from_directory(".", "index.html")
 
-@app.route("/update", methods=["POST"])
-def update():
-    data = load_data()
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
 
-    oid = request.json["order_id"]
-    status = request.json["status"]
+    c.execute("SELECT role FROM users WHERE username=? AND password=?",
+              (data["username"], data["password"]))
+    result = c.fetchone()
+    conn.close()
 
-    data[oid] = {
-        "status": status,
-        "time": time.strftime("%H:%M:%S")
-    }
+    if result:
+        return jsonify({"success": True, "role": result[0]})
+    else:
+        return jsonify({"success": False})
 
-    save_data(data)
-    return jsonify({"message": "updated"})
+@app.route("/add_order", methods=["POST"])
+def add_order():
+    data = request.json
+    now = datetime.now().strftime("%Y-%m-%d")
 
-@app.route("/get")
-def get_data():
-    return jsonify(load_data())
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+
+    try:
+        c.execute("INSERT INTO orders VALUES (?, ?, ?, ?, ?)",
+                  (data["order_id"], data["status"], data["location"],
+                   data["user"], now))
+        conn.commit()
+        msg = "Order Added"
+    except:
+        msg = "Order already exists"
+
+    conn.close()
+    return jsonify({"msg": msg})
+
+@app.route("/update_order", methods=["POST"])
+def update_order():
+    data = request.json
+    now = datetime.now().strftime("%Y-%m-%d")
+
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+
+    c.execute("UPDATE orders SET status=?, location=?, updated_by=?, last_updated=? WHERE order_id=?",
+              (data["status"], data["location"], data["user"], now, data["order_id"]))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"msg": "Updated"})
+
+@app.route("/get_orders")
+def get_orders():
+    conn = sqlite3.connect("database.db")
+    c = conn.cursor()
+
+    c.execute("SELECT * FROM orders")
+    rows = c.fetchall()
+    conn.close()
+
+    orders = []
+    for r in rows:
+        order = {
+            "order_id": r[0],
+            "status": r[1],
+            "location": r[2],
+            "updated_by": r[3],
+            "last_updated": r[4]
+        }
+
+        # Delay check
+        last = datetime.strptime(r[4], "%Y-%m-%d")
+        days = (datetime.now() - last).days
+
+        if days > 7 and r[1] != "Delivered":
+            order["delay"] = True
+        else:
+            order["delay"] = False
+
+        orders.append(order)
+
+    return jsonify(orders)
 
 app.run(host="0.0.0.0", port=5000)
