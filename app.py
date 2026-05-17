@@ -1,18 +1,20 @@
 # app.py
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 import sqlite3
 from datetime import datetime
 import csv
-from flask import send_file
 
 app = Flask(__name__)
 
-# ---------- DATABASE ----------
+# ---------------- DATABASE ----------------
+
 def init_db():
+
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
+    # USERS
     c.execute("""
     CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
@@ -21,6 +23,7 @@ def init_db():
     )
     """)
 
+    # ORDERS
     c.execute("""
     CREATE TABLE IF NOT EXISTS orders (
         order_id TEXT PRIMARY KEY,
@@ -31,54 +34,75 @@ def init_db():
     )
     """)
 
+    # RESET USERS
     c.execute("DELETE FROM users")
 
     users = [
+
         ("manager", "9999", "manager"),
+
         ("operator1", "1111", "operator"),
+
         ("operator2", "2222", "operator"),
+
         ("operator3", "3333", "operator")
+
     ]
 
-    c.executemany("INSERT INTO users VALUES (?, ?, ?)", users)
+    c.executemany(
+        "INSERT INTO users VALUES (?, ?, ?)",
+        users
+    )
 
     conn.commit()
     conn.close()
 
 init_db()
 
-# ---------- HOME ----------
+# ---------------- HOME ----------------
+
 @app.route("/")
 def home():
     return send_from_directory(".", "index.html")
 
-# ---------- LOGIN ----------
+# ---------------- LOGIN ----------------
+
 @app.route("/login", methods=["POST"])
 def login():
+
     data = request.json
+
+    username = data["username"].strip()
+    password = data["password"].strip()
 
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
     c.execute(
         "SELECT role FROM users WHERE username=? AND password=?",
-        (data["username"], data["password"])
+        (username, password)
     )
 
     result = c.fetchone()
+
     conn.close()
 
     if result:
+
         return jsonify({
             "success": True,
             "role": result[0]
         })
 
-    return jsonify({"success": False})
+    return jsonify({
+        "success": False
+    })
 
-# ---------- ADD ORDER ----------
+# ---------------- ADD ORDER ----------------
+
 @app.route("/add_order", methods=["POST"])
 def add_order():
+
     data = request.json
 
     conn = sqlite3.connect("database.db")
@@ -87,14 +111,17 @@ def add_order():
     now = datetime.now().strftime("%Y-%m-%d")
 
     try:
+
         c.execute("""
         INSERT INTO orders VALUES (?, ?, ?, ?, ?)
         """, (
+
             data["order_id"],
             data["status"],
             data["location"],
             data["updated_by"],
             now
+
         ))
 
         conn.commit()
@@ -104,11 +131,15 @@ def add_order():
 
     conn.close()
 
-    return jsonify({"msg": "added"})
+    return jsonify({
+        "msg": "added"
+    })
 
-# ---------- UPDATE ORDER ----------
+# ---------------- UPDATE ORDER ----------------
+
 @app.route("/update_order", methods=["POST"])
 def update_order():
+
     data = request.json
 
     conn = sqlite3.connect("database.db")
@@ -117,23 +148,37 @@ def update_order():
     now = datetime.now().strftime("%Y-%m-%d")
 
     c.execute("""
+
     UPDATE orders
-    SET status=?, location=?, updated_by=?, last_updated=?
+
+    SET
+    status=?,
+    location=?,
+    updated_by=?,
+    last_updated=?
+
     WHERE order_id=?
+
     """, (
+
         data["status"],
         data["location"],
         data["updated_by"],
         now,
         data["order_id"]
+
     ))
 
     conn.commit()
+
     conn.close()
 
-    return jsonify({"msg": "updated"})
+    return jsonify({
+        "msg": "updated"
+    })
 
-# ---------- GET ORDERS ----------
+# ---------------- GET ORDERS ----------------
+
 @app.route("/get_orders")
 def get_orders():
 
@@ -162,17 +207,20 @@ def get_orders():
             delayed = True
 
         orders.append({
+
             "order_id": r[0],
             "status": r[1],
             "location": r[2],
             "updated_by": r[3],
             "last_updated": r[4],
             "delayed": delayed
+
         })
 
     return jsonify(orders)
 
-# ---------- REPORT ----------
+# ---------------- DOWNLOAD REPORT ----------------
+
 @app.route("/download_report")
 def download_report():
 
@@ -190,15 +238,25 @@ def download_report():
         writer = csv.writer(f)
 
         writer.writerow([
+
             "Order ID",
             "Status",
             "Location",
             "Updated By",
             "Last Updated"
+
         ])
 
         writer.writerows(rows)
 
-    return send_file("report.csv", as_attachment=True)
+    return send_file(
+        "report.csv",
+        as_attachment=True
+    )
 
-app.run(host="0.0.0.0", port=5000)
+# ---------------- RUN ----------------
+
+app.run(
+    host="0.0.0.0",
+    port=5000
+)
