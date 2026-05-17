@@ -9,7 +9,6 @@ def init_db():
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
-    # Tables
     c.execute('''CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
         password TEXT,
@@ -24,7 +23,6 @@ def init_db():
         last_updated TEXT
     )''')
 
-    # Force reset users (so login always works)
     c.execute("DELETE FROM users")
 
     users = [
@@ -49,25 +47,27 @@ def home():
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
-    username = data["username"].strip()
-    password = data["password"].strip()
-
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
     c.execute("SELECT role FROM users WHERE username=? AND password=?",
-              (username, password))
+              (data["username"], data["password"]))
     result = c.fetchone()
     conn.close()
 
     if result:
         return jsonify({"success": True, "role": result[0]})
-    else:
-        return jsonify({"success": False})
+    return jsonify({"success": False})
+
 
 @app.route("/add_order", methods=["POST"])
 def add_order():
     data = request.json
+
+    # 🔐 ROLE CHECK
+    if data["role"] != "manager":
+        return jsonify({"msg": "Not allowed"}), 403
+
     now = datetime.now().strftime("%Y-%m-%d")
 
     conn = sqlite3.connect("database.db")
@@ -75,15 +75,16 @@ def add_order():
 
     try:
         c.execute("INSERT INTO orders VALUES (?, ?, ?, ?, ?)",
-                  (data["order_id"], data["status"], data["location"],
-                   data["user"], now))
+                  (data["order_id"], data["status"],
+                   data["location"], data["user"], now))
         conn.commit()
-        msg = "Order Added"
+        msg = "Added"
     except:
-        msg = "Order already exists"
+        msg = "Exists"
 
     conn.close()
     return jsonify({"msg": msg})
+
 
 @app.route("/update_order", methods=["POST"])
 def update_order():
@@ -101,6 +102,7 @@ def update_order():
 
     return jsonify({"msg": "Updated"})
 
+
 @app.route("/get_orders")
 def get_orders():
     conn = sqlite3.connect("database.db")
@@ -115,15 +117,12 @@ def get_orders():
         last = datetime.strptime(r[4], "%Y-%m-%d")
         days = (datetime.now() - last).days
 
-        delay = days > 7 and r[1] != "Delivered"
-
         orders.append({
             "order_id": r[0],
             "status": r[1],
             "location": r[2],
             "updated_by": r[3],
-            "last_updated": r[4],
-            "delay": delay
+            "delay": days > 7 and r[1] != "Delivered"
         })
 
     return jsonify(orders)
