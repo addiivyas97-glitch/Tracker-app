@@ -1,255 +1,3 @@
-<!-- index.html -->
-
-<!DOCTYPE html>
-
-<html>
-
-<head>
-
-<title>Order Tracker</title>
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-
-body{
-    margin:0;
-    padding:0;
-    background:#f3f4f6;
-    font-family:Arial;
-}
-
-.header{
-    background:#111827;
-    color:white;
-    padding:25px;
-    text-align:center;
-}
-
-.container{
-    max-width:520px;
-    margin:auto;
-    padding:15px;
-}
-
-.card{
-    background:white;
-    padding:18px;
-    margin-top:15px;
-    border-radius:14px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
-
-input,select{
-    width:100%;
-    padding:10px;
-    margin-top:10px;
-    border-radius:8px;
-    border:1px solid #ccc;
-}
-
-button{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:15px;
-}
-
-.blue{
-    background:#2563eb;
-    color:white;
-}
-
-.green{
-    background:#16a34a;
-    color:white;
-}
-
-.orange{
-    background:#ea580c;
-    color:white;
-}
-
-.gray{
-    background:#6b7280;
-    color:white;
-}
-
-.hidden{
-    display:none;
-}
-
-.stats{
-    display:flex;
-    gap:10px;
-}
-
-.statbox{
-    flex:1;
-    background:#dbeafe;
-    text-align:center;
-    border-radius:10px;
-    padding:12px;
-}
-
-.order{
-    background:#eef2ff;
-    padding:12px;
-    margin-top:10px;
-    border-radius:10px;
-}
-
-.delay{
-    background:#ffe4e6;
-    border-left:5px solid red;
-}
-
-.log{
-    background:#f9fafb;
-    padding:10px;
-    margin-top:8px;
-    border-radius:8px;
-    font-size:14px;
-}
-
-.small{
-    color:#666;
-    font-size:13px;
-}
-
-</style>
-
-</head>
-
-<body>
-
-<div class="header">
-
-<h1>ORDER TRACKER</h1>
-
-<p>Manager & Operator System</p>
-
-</div>
-
-<div class="container">
-
-<div class="card" id="loginCard">
-
-<h2>Login</h2>
-
-<input id="username" placeholder="Username">
-
-<input id="password" type="password" placeholder="Password">
-
-<button class="blue" onclick="login()">
-
-Login
-
-</button>
-
-</div>
-
-<div class="card hidden" id="dashboardCard">
-
-<h2>Manager Dashboard</h2>
-
-<div class="stats">
-
-<div class="statbox">
-<h3 id="totalOrders">0</h3>
-<p>Total</p>
-</div>
-
-<div class="statbox">
-<h3 id="pendingOrders">0</h3>
-<p>Pending</p>
-</div>
-
-<div class="statbox">
-<h3 id="deliveredOrders">0</h3>
-<p>Delivered</p>
-</div>
-
-<div class="statbox">
-<h3 id="delayedOrders">0</h3>
-<p>Delayed</p>
-</div>
-
-</div>
-
-</div>
-
-<div class="card hidden" id="operatorPanel">
-
-<h2>Update Orders</h2>
-
-<input id="orderId" placeholder="Order ID">
-
-<input id="location" placeholder="Location">
-
-<select id="status">
-
-<option>Order Received</option>
-<option>In Transit</option>
-<option>Delivered</option>
-
-</select>
-
-<button class="green" onclick="addOrder()">
-Add Order
-</button>
-
-<button class="orange" onclick="updateOrder()">
-Update Order
-</button>
-
-</div>
-
-<div class="card hidden" id="managerPanel">
-
-<input id="search"
-placeholder="Search Order"
-onkeyup="loadOrders()">
-
-<select id="filter"
-onchange="loadOrders()">
-
-<option value="all">All</option>
-<option value="pending">Pending</option>
-<option value="delivered">Delivered</option>
-
-</select>
-
-<button class="gray"
-onclick="downloadReport()">
-
-Download Excel Report
-
-</button>
-
-</div>
-
-<div class="card hidden" id="ordersCard">
-
-<h2>Orders</h2>
-
-<div id="orders"></div>
-
-</div>
-
-<div class="card hidden" id="logsCard">
-
-<h2>Operator Activity</h2>
-
-<div id="logs"></div>
-
-</div>
-
-</div>
-
 <script>
 
 let currentUser = "";
@@ -257,7 +5,7 @@ let currentRole = "";
 
 function login(){
 
-fetch("/login",{
+fetch("/login", {
 
 method:"POST",
 
@@ -267,32 +15,43 @@ headers:{
 
 body:JSON.stringify({
 
-username:username.value.trim(),
-password:password.value.trim()
+username:document.getElementById("username").value,
+password:document.getElementById("password").value
 
 })
 
 })
 
-.then(r=>r.json())
+.then(response => response.json())
 
-.then(data=>{
+.then(data => {
 
 if(data.success){
 
-currentUser = username.value;
+currentUser =
+document.getElementById("username").value;
+
 currentRole = data.role;
 
-loginCard.classList.add("hidden");
+document.getElementById("loginCard")
+.classList.add("hidden");
 
-operatorPanel.classList.remove("hidden");
-ordersCard.classList.remove("hidden");
+document.getElementById("operatorPanel")
+.classList.remove("hidden");
 
-if(currentRole=="manager"){
+document.getElementById("ordersCard")
+.classList.remove("hidden");
 
-managerPanel.classList.remove("hidden");
-dashboardCard.classList.remove("hidden");
-logsCard.classList.remove("hidden");
+if(currentRole === "manager"){
+
+document.getElementById("managerPanel")
+.classList.remove("hidden");
+
+document.getElementById("dashboardCard")
+.classList.remove("hidden");
+
+document.getElementById("logsCard")
+.classList.remove("hidden");
 
 }
 
@@ -307,13 +66,13 @@ alert("Wrong Login");
 
 }
 
-})
+});
 
 }
 
 function addOrder(){
 
-fetch("/add_order",{
+fetch("/add_order", {
 
 method:"POST",
 
@@ -323,25 +82,33 @@ headers:{
 
 body:JSON.stringify({
 
-order_id:orderId.value,
-location:location.value,
-status:status.value,
+order_id:
+document.getElementById("orderId").value,
+
+location:
+document.getElementById("location").value,
+
+status:
+document.getElementById("status").value,
+
 updated_by:currentUser
 
 })
 
 })
 
-.then(()=>{
+.then(() => {
+
 loadOrders();
 loadLogs();
-})
+
+});
 
 }
 
 function updateOrder(){
 
-fetch("/update_order",{
+fetch("/update_order", {
 
 method:"POST",
 
@@ -351,25 +118,33 @@ headers:{
 
 body:JSON.stringify({
 
-order_id:orderId.value,
-location:location.value,
-status:status.value,
+order_id:
+document.getElementById("orderId").value,
+
+location:
+document.getElementById("location").value,
+
+status:
+document.getElementById("status").value,
+
 updated_by:currentUser
 
 })
 
 })
 
-.then(()=>{
+.then(() => {
+
 loadOrders();
 loadLogs();
-})
+
+});
 
 }
 
 function downloadReport(){
 
-window.location="/download_report";
+window.location = "/download_report";
 
 }
 
@@ -377,149 +152,78 @@ function loadOrders(){
 
 fetch("/get_orders")
 
-.then(r=>r.json())
+.then(response => response.json())
 
-.then(data=>{
+.then(data => {
 
 let html = "";
 
-let total = data.length;
-let pending = 0;
-let delivered = 0;
-let delayed = 0;
+for(let i = 0; i < data.length; i++){
 
-let searchValue = "";
-let filterValue = "all";
+let o = data[i];
 
-if(currentRole=="manager"){
+html +=
+"<div class='order'>" +
 
-searchValue = search.value.toLowerCase();
-filterValue = filter.value;
+"<b>" + o.order_id + "</b><br>" +
 
-}
+o.status + "<br>" +
 
-for(let o of data){
+o.location + "<br>" +
 
-if(
-searchValue &&
-!o.order_id.toLowerCase().includes(searchValue)
-){
-continue;
-}
+"Updated By: " + o.updated_by + "<br>" +
 
-if(
-filterValue=="pending" &&
-o.status=="Delivered"
-){
-continue;
-}
+"Last Updated: " + o.last_updated +
 
-if(
-filterValue=="delivered" &&
-o.status!="Delivered"
-){
-continue;
-}
-
-if(o.status=="Delivered"){
-delivered++;
-}else{
-pending++;
-}
-
-if(o.delayed){
-delayed++;
-}
-
-let cls = "order";
-
-if(o.delayed"){
-cls += " delay";
-}
-
-html += `
-<div class="${cls}">
-
-<b>${o.order_id}</b><br>
-
-${o.status}<br>
-
-${o.location}<br>
-
-<span class="small">
-Updated By: ${o.updated_by}
-</span><br>
-
-<span class="small">
-Last Updated: ${o.last_updated}
-</span>
-
-</div>
-`;
+"</div>";
 
 }
 
-orders.innerHTML = html;
+document.getElementById("orders").innerHTML = html;
 
-if(currentRole=="manager"){
-
-totalOrders.innerText = total;
-pendingOrders.innerText = pending;
-deliveredOrders.innerText = delivered;
-delayedOrders.innerText = delayed;
-
-}
-
-})
+});
 
 }
 
 function loadLogs(){
 
-if(currentRole!="manager") return;
+if(currentRole !== "manager"){
+return;
+}
 
 fetch("/get_logs")
 
-.then(r=>r.json())
+.then(response => response.json())
 
-.then(data=>{
+.then(data => {
 
 let html = "";
 
-data.reverse();
+for(let i = 0; i < data.length; i++){
 
-for(let log of data){
+let log = data[i];
 
-html += `
-<div class="log">
+html +=
+"<div class='log'>" +
 
-<b>${log.operator_name}</b><br>
+"<b>" + log.operator_name + "</b><br>" +
 
-${log.action}<br>
+log.action + "<br>" +
 
-Order: ${log.order_id}<br>
+log.order_id + "<br>" +
 
-${log.time}
+log.time +
 
-</div>
-`;
-
-}
-
-logs.innerHTML = html;
-
-})
+"</div>";
 
 }
 
-loadOrders();
-loadLogs();
+document.getElementById("logs").innerHTML = html;
+
+});
+
+}
 
 setInterval(loadOrders, 180000);
-setInterval(loadLogs, 180000);
 
 </script>
-
-</body>
-
-</html>
