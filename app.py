@@ -9,6 +9,7 @@ def init_db():
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
+    # Tables
     c.execute('''CREATE TABLE IF NOT EXISTS users (
         username TEXT PRIMARY KEY,
         password TEXT,
@@ -23,7 +24,9 @@ def init_db():
         last_updated TEXT
     )''')
 
-    # Default users
+    # Force reset users (so login always works)
+    c.execute("DELETE FROM users")
+
     users = [
         ("manager", "9999", "manager"),
         ("operator1", "1111", "worker"),
@@ -31,11 +34,7 @@ def init_db():
         ("operator3", "3333", "worker")
     ]
 
-    for u in users:
-        try:
-            c.execute("INSERT INTO users VALUES (?, ?, ?)", u)
-        except:
-            pass
+    c.executemany("INSERT INTO users VALUES (?, ?, ?)", users)
 
     conn.commit()
     conn.close()
@@ -50,11 +49,14 @@ def home():
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
+    username = data["username"].strip()
+    password = data["password"].strip()
+
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
     c.execute("SELECT role FROM users WHERE username=? AND password=?",
-              (data["username"], data["password"]))
+              (username, password))
     result = c.fetchone()
     conn.close()
 
@@ -110,24 +112,19 @@ def get_orders():
 
     orders = []
     for r in rows:
-        order = {
+        last = datetime.strptime(r[4], "%Y-%m-%d")
+        days = (datetime.now() - last).days
+
+        delay = days > 7 and r[1] != "Delivered"
+
+        orders.append({
             "order_id": r[0],
             "status": r[1],
             "location": r[2],
             "updated_by": r[3],
-            "last_updated": r[4]
-        }
-
-        # Delay check
-        last = datetime.strptime(r[4], "%Y-%m-%d")
-        days = (datetime.now() - last).days
-
-        if days > 7 and r[1] != "Delivered":
-            order["delay"] = True
-        else:
-            order["delay"] = False
-
-        orders.append(order)
+            "last_updated": r[4],
+            "delay": delay
+        })
 
     return jsonify(orders)
 
