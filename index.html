@@ -1,73 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Order Tracker</title>
-    <style>
-        body {
-            font-family: Arial;
-            text-align: center;
-        }
-        input {
-            font-size: 18px;
-            padding: 10px;
-            margin: 10px;
-        }
-        button {
-            width: 80%;
-            padding: 15px;
-            margin: 5px;
-            font-size: 18px;
-            color: white;
-            border: none;
-            border-radius: 10px;
-        }
-        .pack { background: #3498db; }
-        .sent { background: #f39c12; }
-        .done { background: #2ecc71; }
-        .cancel { background: #e74c3c; }
-    </style>
+    <title>Tracker App</title>
 </head>
 <body>
 
-<h2>ORDER TRACKER</h2>
+<h2>Login</h2>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
 
-<input id="order_id" placeholder="Enter Order ID"><br>
+<hr>
 
-<button class="pack" onclick="update('Packing')">📦 Packing</button>
-<button class="sent" onclick="update('Sent')">🚚 Sent</button>
-<button class="done" onclick="update('Done')">✅ Done</button>
-<button class="cancel" onclick="update('Cancelled')">❌ Cancelled</button>
+<h2>Order Panel</h2>
+
+<input id="oid" placeholder="Order ID"><br>
+<input id="loc" placeholder="Location"><br>
+
+<select id="status">
+<option>Order Received</option>
+<option>In Process</option>
+<option>Shipped</option>
+<option>In Transit</option>
+<option>Out for Delivery</option>
+<option>Delivered</option>
+</select><br><br>
+
+<button onclick="addOrder()">Add</button>
+<button onclick="updateOrder()">Update</button>
+<button onclick="loadOrders()">Refresh</button>
 
 <h3>Orders</h3>
-<ul id="list"></ul>
+<div id="orders"></div>
 
 <script>
-function update(status) {
-    let id = document.getElementById("order_id").value;
+let currentUser = "";
 
-    fetch("/update", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({order_id: id, status: status})
-    }).then(() => load());
-}
-
-function load() {
-    fetch("/get")
-    .then(res => res.json())
-    .then(data => {
-        let list = document.getElementById("list");
-        list.innerHTML = "";
-
-        for (let id in data) {
-            let li = document.createElement("li");
-            li.innerText = id + " - " + data[id].status + " (" + data[id].time + ")";
-            list.appendChild(li);
+function login(){
+    fetch("/login",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            username:document.getElementById("user").value,
+            password:document.getElementById("pass").value
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        if(data.success){
+            currentUser = document.getElementById("user").value;
+            alert("Login success");
+        } else {
+            alert("Wrong login");
         }
-    });
+    })
 }
 
-setInterval(load, 3000);
+function addOrder(){
+    fetch("/add_order",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            order_id:oid.value,
+            status:status.value,
+            location:loc.value,
+            user:currentUser
+        })
+    }).then(()=>alert("Added"))
+}
+
+function updateOrder(){
+    fetch("/update_order",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+            order_id:oid.value,
+            status:status.value,
+            location:loc.value,
+            user:currentUser
+        })
+    }).then(()=>alert("Updated"))
+}
+
+function loadOrders(){
+    fetch("/get_orders")
+    .then(res=>res.json())
+    .then(data=>{
+        let html = "";
+        data.forEach(o=>{
+            let color = o.delay ? "red" : "green";
+            html += `<p style="color:${color}">
+            ${o.order_id} | ${o.status} | ${o.location} | ${o.updated_by}
+            </p>`;
+        })
+        document.getElementById("orders").innerHTML = html;
+    })
+}
 </script>
 
 </body>
