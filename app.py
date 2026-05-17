@@ -14,7 +14,7 @@ app = Flask(__name__)
 # =========================
 
 SUPABASE_URL = "https://zonfcubbjwqugxfspvxv.supabase.co/rest/v1/"
-SUPABASE_KEY = "sb_publishable_O3jRqRa2ZxVLSv2Unfhvtg_1pN1aVWY"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvbmZjdWJiandxdWd4ZnNwdnh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwMzAxNDcsImV4cCI6MjA5NDYwNjE0N30.ODenipIuIUZSi9la68Xrrd3C7Ib72NQtaGmJyGuNpN0"
 
 supabase = create_client(
     SUPABASE_URL,
