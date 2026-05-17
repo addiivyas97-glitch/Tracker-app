@@ -23,6 +23,7 @@ def init_db():
         last_updated TEXT
     )''')
 
+    # Reset users (safe for now)
     c.execute("DELETE FROM users")
 
     users = [
@@ -47,11 +48,13 @@ def home():
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
+    u = data["username"].strip()
+    p = data["password"].strip()
+
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
-    c.execute("SELECT role FROM users WHERE username=? AND password=?",
-              (data["username"], data["password"]))
+    c.execute("SELECT role FROM users WHERE username=? AND password=?", (u, p))
     result = c.fetchone()
     conn.close()
 
@@ -59,15 +62,9 @@ def login():
         return jsonify({"success": True, "role": result[0]})
     return jsonify({"success": False})
 
-
 @app.route("/add_order", methods=["POST"])
 def add_order():
-    data = request.json
-
-    # 🔐 ROLE CHECK
-    if data["role"] != "manager":
-        return jsonify({"msg": "Not allowed"}), 403
-
+    d = request.json
     now = datetime.now().strftime("%Y-%m-%d")
 
     conn = sqlite3.connect("database.db")
@@ -75,8 +72,7 @@ def add_order():
 
     try:
         c.execute("INSERT INTO orders VALUES (?, ?, ?, ?, ?)",
-                  (data["order_id"], data["status"],
-                   data["location"], data["user"], now))
+                  (d["order_id"], d["status"], d["location"], d["user"], now))
         conn.commit()
         msg = "Added"
     except:
@@ -85,23 +81,21 @@ def add_order():
     conn.close()
     return jsonify({"msg": msg})
 
-
 @app.route("/update_order", methods=["POST"])
 def update_order():
-    data = request.json
+    d = request.json
     now = datetime.now().strftime("%Y-%m-%d")
 
     conn = sqlite3.connect("database.db")
     c = conn.cursor()
 
     c.execute("UPDATE orders SET status=?, location=?, updated_by=?, last_updated=? WHERE order_id=?",
-              (data["status"], data["location"], data["user"], now, data["order_id"]))
+              (d["status"], d["location"], d["user"], now, d["order_id"]))
 
     conn.commit()
     conn.close()
 
     return jsonify({"msg": "Updated"})
-
 
 @app.route("/get_orders")
 def get_orders():
@@ -113,16 +107,21 @@ def get_orders():
     conn.close()
 
     orders = []
+    today = datetime.now()
+
     for r in rows:
         last = datetime.strptime(r[4], "%Y-%m-%d")
-        days = (datetime.now() - last).days
+        days = (today - last).days
+
+        delay = days > 7 and r[1] != "Delivered"
 
         orders.append({
             "order_id": r[0],
             "status": r[1],
             "location": r[2],
             "updated_by": r[3],
-            "delay": days > 7 and r[1] != "Delivered"
+            "last_updated": r[4],
+            "delay": delay
         })
 
     return jsonify(orders)
