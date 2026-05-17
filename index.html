@@ -1,53 +1,65 @@
 <!-- index.html -->
 
 <!DOCTYPE html>
+
 <html>
 
 <head>
 
-<title>Tracker System</title>
+<title>Order Tracker</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 
 body{
-    font-family:Arial;
-    background:#f4f6f9;
+
     margin:0;
     padding:0;
+    font-family:Arial;
+    background:#f3f4f6;
+
 }
 
 .header{
-    background:#1f2937;
+
+    background:#111827;
     color:white;
-    padding:20px;
     text-align:center;
+    padding:25px;
+
 }
 
 .container{
-    max-width:450px;
+
+    max-width:500px;
     margin:auto;
     padding:15px;
+
 }
 
 .card{
+
     background:white;
-    padding:15px;
+    padding:18px;
     border-radius:12px;
     margin-top:15px;
     box-shadow:0 4px 10px rgba(0,0,0,0.1);
+
 }
 
 input,select{
+
     width:100%;
     padding:10px;
-    margin-top:8px;
+    margin-top:10px;
     border-radius:8px;
     border:1px solid #ccc;
+
 }
 
 button{
+
     width:100%;
     padding:12px;
     margin-top:10px;
@@ -55,56 +67,81 @@ button{
     border-radius:8px;
     cursor:pointer;
     font-size:15px;
+
 }
 
-.primary{
+.blue{
+
     background:#2563eb;
     color:white;
+
 }
 
 .green{
+
     background:#16a34a;
     color:white;
+
 }
 
 .orange{
+
     background:#ea580c;
     color:white;
+
 }
 
 .gray{
+
     background:#6b7280;
     color:white;
-}
 
-.order{
-    background:#eef2ff;
-    padding:10px;
-    border-radius:8px;
-    margin-top:10px;
-}
-
-.delay{
-    background:#ffe4e6;
-    border-left:5px solid red;
-}
-
-.stats{
-    display:flex;
-    justify-content:space-between;
-    gap:10px;
-}
-
-.statbox{
-    flex:1;
-    background:#dbeafe;
-    padding:10px;
-    border-radius:10px;
-    text-align:center;
 }
 
 .hidden{
+
     display:none;
+
+}
+
+.stats{
+
+    display:flex;
+    gap:10px;
+
+}
+
+.statbox{
+
+    flex:1;
+    background:#dbeafe;
+    padding:12px;
+    border-radius:10px;
+    text-align:center;
+
+}
+
+.order{
+
+    background:#eef2ff;
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+
+}
+
+.delay{
+
+    background:#ffe4e6;
+    border-left:5px solid red;
+
+}
+
+.small{
+
+    font-size:13px;
+    color:#555;
+
 }
 
 </style>
@@ -114,45 +151,68 @@ button{
 <body>
 
 <div class="header">
+
     <h1>ORDER TRACKER</h1>
+
     <p>Manager & Operator System</p>
+
 </div>
 
 <div class="container">
 
     <!-- LOGIN -->
+
     <div class="card" id="loginCard">
 
         <h2>Login</h2>
 
         <input id="username" placeholder="Username">
 
-        <input id="password" type="password" placeholder="Password">
+        <input
+        id="password"
+        type="password"
+        placeholder="Password">
 
-        <button class="primary" onclick="login()">Login</button>
+        <button
+        class="blue"
+        onclick="login()">
+
+        Login
+
+        </button>
 
     </div>
 
     <!-- DASHBOARD -->
-    <div class="card hidden" id="dashboard">
+
+    <div class="card hidden" id="dashboardCard">
 
         <h2>Dashboard</h2>
 
         <div class="stats">
 
             <div class="statbox">
+
                 <h3 id="totalOrders">0</h3>
+
                 <p>Total</p>
+
             </div>
 
             <div class="statbox">
-                <h3 id="deliveredOrders">0</h3>
-                <p>Delivered</p>
-            </div>
 
-            <div class="statbox">
                 <h3 id="pendingOrders">0</h3>
+
                 <p>Pending</p>
+
+            </div>
+
+            <div class="statbox">
+
+                <h3 id="deliveredOrders">0</h3>
+
+                <p>Delivered</p>
+
             </div>
 
         </div>
@@ -160,50 +220,80 @@ button{
     </div>
 
     <!-- OPERATOR PANEL -->
+
     <div class="card hidden" id="operatorPanel">
 
         <h2>Update Orders</h2>
 
-        <input id="orderId" placeholder="Order ID">
+        <input
+        id="orderId"
+        placeholder="Order ID">
 
-        <input id="location" placeholder="Location">
+        <input
+        id="location"
+        placeholder="Location">
 
         <select id="status">
 
-            <option>Packing</option>
-            <option>Sent</option>
+            <option>Order Received</option>
+
             <option>In Transit</option>
+
             <option>Delivered</option>
-            <option>Cancelled</option>
 
         </select>
 
-        <button class="green" onclick="addOrder()">Add Order</button>
+        <button
+        class="green"
+        onclick="addOrder()">
 
-        <button class="orange" onclick="updateOrder()">Update Order</button>
+        Add Order
+
+        </button>
+
+        <button
+        class="orange"
+        onclick="updateOrder()">
+
+        Update Order
+
+        </button>
 
     </div>
 
-    <!-- FILTER -->
+    <!-- MANAGER FEATURES -->
+
     <div class="card hidden" id="managerPanel">
 
-        <input id="search" placeholder="Search Order" onkeyup="loadOrders()">
+        <input
+        id="search"
+        placeholder="Search Order"
+        onkeyup="loadOrders()">
 
-        <select id="filter" onchange="loadOrders()">
+        <select
+        id="filter"
+        onchange="loadOrders()">
 
             <option value="all">All</option>
+
             <option value="pending">Pending</option>
+
             <option value="delivered">Delivered</option>
 
         </select>
 
-        <button class="gray" onclick="downloadReport()">
-            Download Excel Report
+        <button
+        class="gray"
+        onclick="downloadReport()">
+
+        Download Excel Report
+
         </button>
 
     </div>
 
     <!-- ORDERS -->
+
     <div class="card hidden" id="ordersCard">
 
         <h2>Orders</h2>
@@ -230,8 +320,11 @@ function login(){
         },
 
         body:JSON.stringify({
-            username:username.value,
-            password:password.value
+
+            username:username.value.trim(),
+
+            password:password.value.trim()
+
         })
 
     })
@@ -248,12 +341,16 @@ function login(){
 
             loginCard.classList.add("hidden");
 
-            dashboard.classList.remove("hidden");
+            dashboardCard.classList.remove("hidden");
+
             operatorPanel.classList.remove("hidden");
+
             ordersCard.classList.remove("hidden");
 
             if(currentRole=="manager"){
+
                 managerPanel.classList.remove("hidden");
+
             }
 
             loadOrders();
@@ -261,7 +358,9 @@ function login(){
         }
 
         else{
+
             alert("Wrong Login");
+
         }
 
     })
@@ -281,8 +380,11 @@ function addOrder(){
         body:JSON.stringify({
 
             order_id:orderId.value,
+
             location:location.value,
+
             status:status.value,
+
             updated_by:currentUser
 
         })
@@ -310,8 +412,11 @@ function updateOrder(){
         body:JSON.stringify({
 
             order_id:orderId.value,
+
             location:location.value,
+
             status:status.value,
+
             updated_by:currentUser
 
         })
@@ -348,47 +453,84 @@ function loadOrders(){
 
         let pending = 0;
 
-        let searchValue = search.value.toLowerCase();
+        let searchValue = "";
 
-        let filterValue = filter.value;
+        let filterValue = "all";
+
+        if(currentRole=="manager"){
+
+            searchValue =
+            search.value.toLowerCase();
+
+            filterValue =
+            filter.value;
+
+        }
 
         data.forEach(o=>{
 
-            if(searchValue &&
-            !o.order_id.toLowerCase().includes(searchValue)){
+            if(
+            searchValue &&
+            !o.order_id.toLowerCase().includes(searchValue)
+            ){
                 return;
             }
 
-            if(filterValue=="pending" &&
-            o.status=="Delivered"){
+            if(
+            filterValue=="pending" &&
+            o.status=="Delivered"
+            ){
                 return;
             }
 
-            if(filterValue=="delivered" &&
-            o.status!="Delivered"){
+            if(
+            filterValue=="delivered" &&
+            o.status!="Delivered"
+            ){
                 return;
             }
 
             if(o.status=="Delivered"){
                 delivered++;
-            }else{
+            }
+            else{
                 pending++;
             }
 
             let cls = "order";
 
             if(o.delayed){
+
                 cls += " delay";
+
             }
 
             html += `
+
             <div class="${cls}">
+
                 <b>${o.order_id}</b><br>
+
                 ${o.status}<br>
+
                 ${o.location}<br>
-                Updated By: ${o.updated_by}<br>
-                Last Updated: ${o.last_updated}
+
+                <span class="small">
+
+                Updated By:
+                ${o.updated_by}
+
+                </span><br>
+
+                <span class="small">
+
+                Last Updated:
+                ${o.last_updated}
+
+                </span>
+
             </div>
+
             `;
 
         });
@@ -396,12 +538,16 @@ function loadOrders(){
         orders.innerHTML = html;
 
         totalOrders.innerText = total;
-        deliveredOrders.innerText = delivered;
+
         pendingOrders.innerText = pending;
+
+        deliveredOrders.innerText = delivered;
 
     })
 
 }
+
+loadOrders();
 
 setInterval(loadOrders, 180000);
 
