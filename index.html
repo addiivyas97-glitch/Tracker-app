@@ -7,6 +7,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#111827">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -45,10 +49,6 @@ border:1px solid #555;
 background:#374151;
 }
 
-.dark .log{
-background:#374151;
-}
-
 .header{
 background:linear-gradient(
 135deg,
@@ -57,19 +57,8 @@ background:linear-gradient(
 );
 
 padding:30px;
-color:white;
 text-align:center;
-box-shadow:0 4px 10px rgba(0,0,0,0.2);
-}
-
-.header h1{
-font-size:34px;
-font-weight:600;
-}
-
-.header p{
-margin-top:8px;
-opacity:0.8;
+color:white;
 }
 
 .container{
@@ -84,11 +73,6 @@ padding:20px;
 margin-top:20px;
 border-radius:18px;
 box-shadow:0 4px 14px rgba(0,0,0,0.1);
-transition:0.3s;
-}
-
-.card:hover{
-transform:translateY(-2px);
 }
 
 input,select{
@@ -97,7 +81,6 @@ padding:14px;
 margin-top:10px;
 border-radius:10px;
 border:1px solid #ccc;
-outline:none;
 font-size:15px;
 }
 
@@ -108,11 +91,6 @@ border-radius:10px;
 cursor:pointer;
 font-size:15px;
 margin-top:10px;
-transition:0.3s;
-}
-
-button:hover{
-transform:scale(1.02);
 }
 
 .blue{
@@ -153,10 +131,6 @@ border-radius:14px;
 text-align:center;
 }
 
-.statbox h3{
-font-size:28px;
-}
-
 .order{
 background:#eef2ff;
 padding:18px;
@@ -167,13 +141,6 @@ margin-top:12px;
 .delay{
 background:#fee2e2;
 border-left:6px solid red;
-}
-
-.log{
-background:#f9fafb;
-padding:12px;
-margin-top:10px;
-border-radius:10px;
 }
 
 .status{
@@ -388,17 +355,17 @@ Update Order
 
 </div>
 
-<div class="card hidden" id="logsCard">
-
-<h2>Activity Logs</h2>
-
-<div id="logs"></div>
-
-</div>
-
 </div>
 
 <script>
+
+if("serviceWorker" in navigator){
+
+navigator.serviceWorker.register(
+"/service-worker.js"
+);
+
+}
 
 let currentUser = "";
 let currentRole = "";
@@ -462,13 +429,9 @@ document.getElementById("dashboardCard")
 document.getElementById("managerPanel")
 .classList.remove("hidden");
 
-document.getElementById("logsCard")
-.classList.remove("hidden");
-
 }
 
 loadOrders();
-loadLogs();
 
 }
 
@@ -514,7 +477,6 @@ data.order_id
 );
 
 loadOrders();
-loadLogs();
 
 });
 
@@ -550,7 +512,6 @@ updated_by:currentUser
 .then(() => {
 
 loadOrders();
-loadLogs();
 
 });
 
@@ -719,11 +680,6 @@ if(o.delayed){
 
 cls += " delay";
 
-alert(
-"Delayed Order: " +
-o.order_id
-);
-
 }
 
 let statusClass = "pending";
@@ -783,9 +739,7 @@ o.order_id +
 o.order_id +
 "'>Barcode</a><br>" +
 
-"<a href='/invoice/" +
-o.order_id +
-"'>Invoice</a>" +
+"<a href='/download_pdf'>PDF</a>" +
 
 "</div>";
 
@@ -822,61 +776,7 @@ document.getElementById(
 
 }
 
-function loadLogs(){
-
-if(
-currentRole !== "manager" &&
-currentRole !== "supervisor"
-){
-return;
-}
-
-fetch("/get_logs")
-
-.then(response => response.json())
-
-.then(data => {
-
-let html = "";
-
-data.reverse();
-
-for(let i=0;i<data.length;i++){
-
-let log = data[i];
-
-html +=
-
-"<div class='log'>" +
-
-"<b>" +
-log.operator_name +
-"</b><br>" +
-
-log.action +
-"<br>" +
-
-"Order: " +
-log.order_id +
-"<br>" +
-
-log.time +
-
-"</div>";
-
-}
-
-document.getElementById(
-"logs"
-).innerHTML = html;
-
-});
-
-}
-
 setInterval(loadOrders,10000);
-
-setInterval(loadLogs,10000);
 
 </script>
 
