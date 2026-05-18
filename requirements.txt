@@ -3,3 +3,9 @@ supabase==1.0.3
 pandas
 openpyxl
 gunicorn
+reportlab
+qrcode
+pillow
+python-barcode
+flask-socketio
+eventlet
