@@ -3,120 +3,217 @@
 
 <head>
 
-<title>Order Tracker</title>
+<title>Order Tracker Pro</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
 <style>
 
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
 body{
-    margin:0;
-    padding:0;
-    font-family:Arial;
-    background:#f3f4f6;
+background:#f3f4f6;
+color:#111827;
+transition:0.3s;
+}
+
+.dark{
+background:#111827;
+color:white;
+}
+
+.dark .card{
+background:#1f2937;
+color:white;
+}
+
+.dark input,
+.dark select{
+background:#374151;
+color:white;
+border:1px solid #555;
+}
+
+.dark .order{
+background:#374151;
+}
+
+.dark .log{
+background:#374151;
 }
 
 .header{
-    background:#111827;
-    color:white;
-    text-align:center;
-    padding:25px;
+background:linear-gradient(
+135deg,
+#111827,
+#1e3a8a
+);
+
+padding:30px;
+color:white;
+text-align:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.2);
+}
+
+.header h1{
+font-size:34px;
+font-weight:600;
+}
+
+.header p{
+margin-top:8px;
+opacity:0.8;
 }
 
 .container{
-    max-width:1000px;
-    margin:auto;
-    padding:20px;
+max-width:1200px;
+margin:auto;
+padding:20px;
 }
 
 .card{
-    background:white;
-    padding:20px;
-    margin-top:20px;
-    border-radius:12px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+background:white;
+padding:20px;
+margin-top:20px;
+border-radius:18px;
+box-shadow:0 4px 14px rgba(0,0,0,0.1);
+transition:0.3s;
 }
 
-input, select{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    box-sizing:border-box;
+.card:hover{
+transform:translateY(-2px);
+}
+
+input,select{
+width:100%;
+padding:14px;
+margin-top:10px;
+border-radius:10px;
+border:1px solid #ccc;
+outline:none;
+font-size:15px;
 }
 
 button{
-    width:100%;
-    padding:12px;
-    margin-top:10px;
-    border:none;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:15px;
+padding:12px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-size:15px;
+margin-top:10px;
+transition:0.3s;
+}
+
+button:hover{
+transform:scale(1.02);
 }
 
 .blue{
-    background:#2563eb;
-    color:white;
+background:#2563eb;
+color:white;
 }
 
 .green{
-    background:#16a34a;
-    color:white;
+background:#16a34a;
+color:white;
 }
 
 .orange{
-    background:#ea580c;
-    color:white;
+background:#ea580c;
+color:white;
 }
 
 .gray{
-    background:#6b7280;
-    color:white;
+background:#6b7280;
+color:white;
 }
 
 .hidden{
-    display:none;
+display:none;
 }
 
 .stats{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(180px,1fr));
+gap:15px;
 }
 
 .statbox{
-    flex:1;
-    min-width:120px;
-    background:#dbeafe;
-    padding:15px;
-    border-radius:10px;
-    text-align:center;
+background:#dbeafe;
+padding:20px;
+border-radius:14px;
+text-align:center;
+}
+
+.statbox h3{
+font-size:28px;
 }
 
 .order{
-    background:#eef2ff;
-    padding:15px;
-    margin-top:10px;
-    border-radius:10px;
+background:#eef2ff;
+padding:18px;
+border-radius:14px;
+margin-top:12px;
 }
 
 .delay{
-    background:#fee2e2;
-    border-left:5px solid red;
+background:#fee2e2;
+border-left:6px solid red;
 }
 
 .log{
-    background:#f9fafb;
-    padding:10px;
-    margin-top:10px;
-    border-radius:8px;
+background:#f9fafb;
+padding:12px;
+margin-top:10px;
+border-radius:10px;
 }
 
-.small{
-    color:#666;
-    font-size:13px;
+.status{
+padding:6px 10px;
+border-radius:20px;
+font-size:13px;
+display:inline-block;
+margin-top:8px;
+}
+
+.delivered{
+background:#dcfce7;
+color:#166534;
+}
+
+.transit{
+background:#fef3c7;
+color:#92400e;
+}
+
+.pending{
+background:#dbeafe;
+color:#1d4ed8;
+}
+
+.topbar{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-top:15px;
+}
+
+a{
+text-decoration:none;
+color:#2563eb;
+font-weight:500;
+}
+
+.dark a{
+color:#60a5fa;
 }
 
 </style>
@@ -127,13 +224,35 @@ button{
 
 <div class="header">
 
-<h1>ORDER TRACKER</h1>
+<h1>ORDER TRACKER PRO</h1>
 
-<p>Manager & Operator System</p>
+<p>Smart Logistics Management System</p>
 
 </div>
 
 <div class="container">
+
+<button class="gray" onclick="toggleDarkMode()">
+
+Toggle Dark Mode
+
+</button>
+
+<div class="card">
+
+<h2>Track Your Order</h2>
+
+<input id="trackInput" placeholder="Enter Order ID">
+
+<button class="blue" onclick="trackOrder()">
+
+Track Order
+
+</button>
+
+<div id="trackResult"></div>
+
+</div>
 
 <div class="card" id="loginCard">
 
@@ -153,7 +272,7 @@ Login
 
 <div class="card hidden" id="dashboardCard">
 
-<h2>Manager Dashboard</h2>
+<h2>Dashboard</h2>
 
 <div class="stats">
 
@@ -181,37 +300,27 @@ Login
 
 </div>
 
-<div class="card hidden" id="operatorPanel">
+<div class="card hidden" id="managerPanel">
 
-<h2>Order Update</h2>
-
-<input id="orderId" placeholder="Order ID">
+<h2>Create Order</h2>
 
 <input id="location" placeholder="Location">
 
-<select id="status">
+<select id="assignedOperator">
 
-<option>Order Received</option>
-<option>In Transit</option>
-<option>Delivered</option>
+<option>operator1</option>
+<option>operator2</option>
+<option>operator3</option>
 
 </select>
 
-<button class="green" onclick="addOrder()">
+<button class="green" onclick="createOrder()">
 
-Add Order
-
-</button>
-
-<button class="orange" onclick="updateOrder()">
-
-Update Order
+Create Order
 
 </button>
 
-</div>
-
-<div class="card hidden" id="managerPanel">
+<hr style="margin-top:20px;margin-bottom:20px;">
 
 <h2>Manager Controls</h2>
 
@@ -220,16 +329,52 @@ Update Order
 <select id="filter" onchange="loadOrders()">
 
 <option value="all">All Orders</option>
-
 <option value="pending">Pending</option>
-
 <option value="delivered">Delivered</option>
 
 </select>
 
+<div class="topbar">
+
 <button class="gray" onclick="downloadReport()">
 
-Download Excel Report
+Excel Report
+
+</button>
+
+<button class="gray" onclick="downloadPDF()">
+
+PDF Report
+
+</button>
+
+</div>
+
+</div>
+
+<div class="card hidden" id="operatorPanel">
+
+<h2>Update Order</h2>
+
+<input id="updateOrderId" placeholder="Order ID">
+
+<input id="updateLocation" placeholder="Location">
+
+<select id="updateStatus">
+
+<option>Order Received</option>
+<option>Packed</option>
+<option>QC Checked</option>
+<option>Dispatched</option>
+<option>In Transit</option>
+<option>Out For Delivery</option>
+<option>Delivered</option>
+
+</select>
+
+<button class="orange" onclick="updateOrder()">
+
+Update Order
 
 </button>
 
@@ -245,7 +390,7 @@ Download Excel Report
 
 <div class="card hidden" id="logsCard">
 
-<h2>Operator Activity</h2>
+<h2>Activity Logs</h2>
 
 <div id="logs"></div>
 
@@ -258,9 +403,15 @@ Download Excel Report
 let currentUser = "";
 let currentRole = "";
 
+function toggleDarkMode(){
+
+document.body.classList.toggle("dark");
+
+}
+
 function login(){
 
-fetch("/login", {
+fetch("/login",{
 
 method:"POST",
 
@@ -270,9 +421,11 @@ headers:{
 
 body:JSON.stringify({
 
-username:document.getElementById("username").value,
+username:
+document.getElementById("username").value,
 
-password:document.getElementById("password").value
+password:
+document.getElementById("password").value
 
 })
 
@@ -292,18 +445,21 @@ currentRole = data.role;
 document.getElementById("loginCard")
 .classList.add("hidden");
 
-document.getElementById("operatorPanel")
-.classList.remove("hidden");
-
 document.getElementById("ordersCard")
 .classList.remove("hidden");
 
-if(currentRole === "manager"){
-
-document.getElementById("managerPanel")
+document.getElementById("operatorPanel")
 .classList.remove("hidden");
 
+if(
+currentRole === "manager" ||
+currentRole === "supervisor"
+){
+
 document.getElementById("dashboardCard")
+.classList.remove("hidden");
+
+document.getElementById("managerPanel")
 .classList.remove("hidden");
 
 document.getElementById("logsCard")
@@ -326,9 +482,9 @@ alert("Wrong Login");
 
 }
 
-function addOrder(){
+function createOrder(){
 
-fetch("/add_order", {
+fetch("/create_order",{
 
 method:"POST",
 
@@ -338,22 +494,24 @@ headers:{
 
 body:JSON.stringify({
 
-order_id:
-document.getElementById("orderId").value,
-
 location:
 document.getElementById("location").value,
 
-status:
-document.getElementById("status").value,
-
-updated_by:currentUser
+assigned_operator:
+document.getElementById("assignedOperator").value
 
 })
 
 })
 
-.then(() => {
+.then(response => response.json())
+
+.then(data => {
+
+alert(
+"Order Created: " +
+data.order_id
+);
 
 loadOrders();
 loadLogs();
@@ -364,7 +522,7 @@ loadLogs();
 
 function updateOrder(){
 
-fetch("/update_order", {
+fetch("/update_order",{
 
 method:"POST",
 
@@ -375,13 +533,13 @@ headers:{
 body:JSON.stringify({
 
 order_id:
-document.getElementById("orderId").value,
+document.getElementById("updateOrderId").value,
 
 location:
-document.getElementById("location").value,
+document.getElementById("updateLocation").value,
 
 status:
-document.getElementById("status").value,
+document.getElementById("updateStatus").value,
 
 updated_by:currentUser
 
@@ -400,7 +558,72 @@ loadLogs();
 
 function downloadReport(){
 
-window.location = "/download_report";
+window.location="/download_report";
+
+}
+
+function downloadPDF(){
+
+window.location="/download_pdf";
+
+}
+
+function trackOrder(){
+
+fetch("/get_orders")
+
+.then(response => response.json())
+
+.then(data => {
+
+let id =
+document.getElementById("trackInput")
+.value;
+
+let found = null;
+
+for(let i=0;i<data.length;i++){
+
+if(data[i].order_id === id){
+
+found = data[i];
+
+}
+
+}
+
+if(found){
+
+document.getElementById(
+"trackResult"
+).innerHTML =
+
+"<div class='order'>" +
+
+"<h3>" + found.order_id + "</h3>" +
+
+"<div class='status transit'>" +
+found.status +
+"</div><br><br>" +
+
+"Location: " +
+found.location +
+"<br><br>" +
+
+"Last Updated: " +
+found.last_updated +
+
+"</div>";
+
+}
+
+else{
+
+alert("Order Not Found");
+
+}
+
+});
 
 }
 
@@ -420,10 +643,12 @@ let delivered = 0;
 let delayed = 0;
 
 let searchValue = "";
-
 let filterValue = "all";
 
-if(currentRole === "manager"){
+if(
+currentRole === "manager" ||
+currentRole === "supervisor"
+){
 
 searchValue =
 document.getElementById("search")
@@ -435,26 +660,43 @@ document.getElementById("filter")
 
 }
 
-for(let i = 0; i < data.length; i++){
+for(let i=0;i<data.length;i++){
 
 let o = data[i];
 
-if(searchValue &&
-!o.order_id.toLowerCase().includes(searchValue)){
+if(currentRole === "operator"){
+
+if(o.assigned_operator !== currentUser){
 
 continue;
 
 }
 
-if(filterValue === "pending" &&
-o.status === "Delivered"){
+}
+
+if(
+searchValue &&
+!o.order_id.toLowerCase()
+.includes(searchValue)
+){
 
 continue;
 
 }
 
-if(filterValue === "delivered" &&
-o.status !== "Delivered"){
+if(
+filterValue === "pending" &&
+o.status === "Delivered"
+){
+
+continue;
+
+}
+
+if(
+filterValue === "delivered" &&
+o.status !== "Delivered"
+){
 
 continue;
 
@@ -474,50 +716,105 @@ delayed++;
 let cls = "order";
 
 if(o.delayed){
+
 cls += " delay";
+
+alert(
+"Delayed Order: " +
+o.order_id
+);
+
+}
+
+let statusClass = "pending";
+
+if(o.status === "Delivered"){
+statusClass = "delivered";
+}
+
+if(
+o.status === "In Transit" ||
+o.status === "Out For Delivery"
+){
+statusClass = "transit";
 }
 
 html +=
 
 "<div class='" + cls + "'>" +
 
-"<b>" + o.order_id + "</b><br>" +
+"<h3>" + o.order_id + "</h3>" +
 
-o.status + "<br>" +
+"Assigned To: " +
+o.assigned_operator +
+"<br><br>" +
 
-o.location + "<br>" +
+"<div class='status " +
+statusClass +
+"'>" +
 
-"<span class='small'>" +
+o.status +
 
-"Updated By: " + o.updated_by +
+"</div><br><br>" +
+
+"Location: " +
+o.location +
+"<br><br>" +
+
+"<span>" +
+
+"Updated By: " +
+o.updated_by +
 
 "</span><br>" +
 
-"<span class='small'>" +
+"<span>" +
 
-"Last Updated: " + o.last_updated +
+"Last Updated: " +
+o.last_updated +
 
-"</span>" +
+"</span><br><br>" +
+
+"<a href='/generate_qr/" +
+o.order_id +
+"'>QR Code</a><br>" +
+
+"<a href='/generate_barcode/" +
+o.order_id +
+"'>Barcode</a><br>" +
+
+"<a href='/invoice/" +
+o.order_id +
+"'>Invoice</a>" +
 
 "</div>";
 
 }
 
-document.getElementById("orders").innerHTML = html;
+document.getElementById(
+"orders"
+).innerHTML = html;
 
-if(currentRole === "manager"){
+if(
+currentRole === "manager" ||
+currentRole === "supervisor"
+){
 
-document.getElementById("totalOrders")
-.innerText = total;
+document.getElementById(
+"totalOrders"
+).innerText = total;
 
-document.getElementById("pendingOrders")
-.innerText = pending;
+document.getElementById(
+"pendingOrders"
+).innerText = pending;
 
-document.getElementById("deliveredOrders")
-.innerText = delivered;
+document.getElementById(
+"deliveredOrders"
+).innerText = delivered;
 
-document.getElementById("delayedOrders")
-.innerText = delayed;
+document.getElementById(
+"delayedOrders"
+).innerText = delayed;
 
 }
 
@@ -527,7 +824,10 @@ document.getElementById("delayedOrders")
 
 function loadLogs(){
 
-if(currentRole !== "manager"){
+if(
+currentRole !== "manager" &&
+currentRole !== "supervisor"
+){
 return;
 }
 
@@ -541,7 +841,7 @@ let html = "";
 
 data.reverse();
 
-for(let i = 0; i < data.length; i++){
+for(let i=0;i<data.length;i++){
 
 let log = data[i];
 
@@ -549,11 +849,16 @@ html +=
 
 "<div class='log'>" +
 
-"<b>" + log.operator_name + "</b><br>" +
+"<b>" +
+log.operator_name +
+"</b><br>" +
 
-log.action + "<br>" +
+log.action +
+"<br>" +
 
-"Order: " + log.order_id + "<br>" +
+"Order: " +
+log.order_id +
+"<br>" +
 
 log.time +
 
@@ -561,15 +866,17 @@ log.time +
 
 }
 
-document.getElementById("logs").innerHTML = html;
+document.getElementById(
+"logs"
+).innerHTML = html;
 
 });
 
 }
 
-setInterval(loadOrders, 180000);
+setInterval(loadOrders,10000);
 
-setInterval(loadLogs, 180000);
+setInterval(loadLogs,10000);
 
 </script>
 
